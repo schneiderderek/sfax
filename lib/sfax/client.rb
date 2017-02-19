@@ -45,7 +45,7 @@ module SFax
 
       response_object.tap do |o|
         raise SendFaxError, o.message unless o.success?
-        raise SendFaxError, o.message if o.fax_id == SEND_FAX_QUEUE_ID_ERROR_VALUE
+        raise SendFaxError, o.message if o.fax_id.to_s == SEND_FAX_QUEUE_ID_ERROR_VALUE
       end
     end
 
