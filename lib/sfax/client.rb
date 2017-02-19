@@ -35,8 +35,17 @@ module SFax
         fetch('SendFaxQueueId')
       end
 
+      def response_object.success?
+        fetch('isSuccess')
+      end
+
+      def response_object.message
+        fetch('message')
+      end
+
       response_object.tap do |o|
-        raise SendFaxError if o.fax_id == -1
+        raise SendFaxError, o.message unless o.success?
+        raise SendFaxError, o.message if o.fax_id.to_s == SEND_FAX_QUEUE_ID_ERROR_VALUE
       end
     end
 
