@@ -17,7 +17,9 @@ RSpec.describe SFax::Client do
     let(:file) { StringIO.new('data') }
     let(:recipient_name) { nil }
     let(:token) { SecureRandom.hex }
+    let(:message) { SecureRandom.hex }
     let(:send_fax_queue_id) { rand(1_000_000) }
+    let(:is_success) { true }
     let!(:send_fax_request) do
       stub_request(:post, 'https://api.sfaxme.com/api/sendfax').with(query: {
         'token' => token,
@@ -26,6 +28,8 @@ RSpec.describe SFax::Client do
         'RecipientName' => recipient_name,
       }).and_return(body: {
         'SendFaxQueueId' => send_fax_queue_id,
+        'isSuccess' => is_success,
+        'message' => message,
       }.to_json)
     end
 
@@ -50,12 +54,24 @@ RSpec.describe SFax::Client do
       end
 
       context 'send_fax_queue_id is -1' do
-        let(:send_fax_queue_id) { -1 }
+        let(:send_fax_queue_id) { '-1' }
 
         specify do
           expect {
             subject.send_fax(fax_number: fax_number, file: file, recipient_name: recipient_name)
-          }.to raise_error(described_class::SendFaxError)
+          }.to raise_error(described_class::SendFaxError, message)
+
+          expect(send_fax_request).to have_been_requested
+        end
+      end
+
+      context 'isSuccess is false' do
+        let(:is_success) { false }
+
+        specify do
+          expect {
+            subject.send_fax(fax_number: fax_number, file: file, recipient_name: recipient_name)
+          }.to raise_error(described_class::SendFaxError, message)
 
           expect(send_fax_request).to have_been_requested
         end
