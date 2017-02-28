@@ -1,3 +1,4 @@
+require 'sfax/errors'
 require 'sfax/client'
 require 'sfax/encryptor'
 require 'sfax/version'

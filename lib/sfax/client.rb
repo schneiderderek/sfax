@@ -7,6 +7,7 @@ require 'json'
 module SFax
   class Client
     include Constants
+    include Errors
 
     def initialize(username:, api_key:, encryption_key:)
       @username = username
@@ -44,8 +45,8 @@ module SFax
       end
 
       response_object.tap do |o|
-        raise SendFaxError, o.message unless o.success?
-        raise SendFaxError, o.message if o.fax_id.to_s == SEND_FAX_QUEUE_ID_ERROR_VALUE
+        raise SendFaxError.new(message: o.message, response: o) unless o.success?
+        raise SendFaxError.new(message: o.message, response: o) if o.fax_id.to_s == SEND_FAX_QUEUE_ID_ERROR_VALUE
       end
     end
 
@@ -74,8 +75,5 @@ module SFax
         raise InvalidFaxNumberError, "Expected an 11 digit fax number. Got: #{number}"
       end
     end
-
-    InvalidFaxNumberError = Class.new(StandardError)
-    SendFaxError = Class.new(StandardError)
   end
 end
